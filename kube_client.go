@@ -30,8 +30,8 @@ var (
 
 // FetchPods from Kubernetes using the given |namespace| and ListOptions.
 // Pods are returned in randomly shuffled order.
-func FetchPods(t require.TestingT, namespace string, opts metav1.ListOptions) []v1.Pod {
-	var pods, err = kubeClient(t).CoreV1().Pods(namespace).List(opts)
+func FetchPods(t require.TestingT, namespace, selector string, opts metav1.ListOptions) []v1.Pod {
+	var pods, err = kubeClient(t).CoreV1().Pods(namespace).List(metav1.ListOptions{LabelSelector: selector})
 	assert.NoError(t, err, "listing pods")
 	assert.NotEmpty(t, pods.Items)
 	return shuffled(pods.Items)

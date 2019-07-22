@@ -28,7 +28,7 @@ leaves the partition in place for a minute, and then exits.
 
 ```
 func TestPartitionWithinEtcdCluster(t *testing.T) {
-	var pods = urkel.FetchPods(t, myEtcdPodSelector)
+	var pods = urkel.FetchPods(t, "default", "app=etcd")
 
 	var fs = urkel.NewFaultSet(t)
 	defer fs.RemoveAll()
