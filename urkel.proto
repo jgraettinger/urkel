@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+package urkel;
+
+import "google/protobuf/empty.proto";
+
+// Partition traffic flows of a specific interface from a source IP range,
+// using the given mode (either REJECT or DROP).
+message Partition {
+    // Index of the interface to partition. Can be determined by
+    // querying "/sys/class/net/eth0/iflink" within the target container.
+    string interface_index = 1;
+    // Network IP range to partition from (eg "1.2.3.4/16").
+    string from_ip_range = 2;
+    // Partition mode. REJECT to actively reset connections, DROP to silently
+    // drop packet flows.
+    string mode = 3;
+}
+
+// Fault is a union type indicating the variety of Fault to be applied.
+message Fault {
+    Partition partition = 1;
+
+    // TODO(johnny): Faults for network latency, partial packet drops, CPU & disk stress.
+}
+
+// A Chaos service injects a stream of Faults onto the server host, removing
+// each of the injected faults when the client closes the stream (or fails).
+// In other words, clients should hold the stream open for the desired fault
+// time interval, then close or cancel to roll-back the injected faults.
+service Chaos {
+    rpc InjectFault(stream Fault) returns (stream google.protobuf.Empty);
+}
