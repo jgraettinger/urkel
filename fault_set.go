@@ -113,7 +113,7 @@ func (fs *FaultSet) RemoveAll() {
 
 // install a fault of the |pod| via a daemon running on the Pod's host.
 func (fs *FaultSet) install(pod v1.Pod, fault Fault) {
-	var addr = pod.Spec.NodeName + ":1666"
+	var addr = pod.Status.HostIP + ":1666"
 	var err error
 
 	var s, ok = fs.streams[addr]
