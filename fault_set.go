@@ -7,7 +7,6 @@ import (
 	"io"
 	"strings"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc"
 	v1 "k8s.io/api/core/v1"
@@ -84,7 +83,7 @@ func (fs *FaultSet) Crash(pods ...v1.Pod) {
 	var coreV1 = kubeClient(fs.t).CoreV1()
 
 	for _, p := range pods {
-		assert.NoError(fs.t, coreV1.Pods(p.Namespace).Delete(p.Name, &metav1.DeleteOptions{
+		require.NoError(fs.t, coreV1.Pods(p.Namespace).Delete(p.Name, &metav1.DeleteOptions{
 			GracePeriodSeconds: zero,
 		}))
 	}
@@ -97,17 +96,17 @@ func (fs *FaultSet) Delete(pods ...v1.Pod) {
 	var coreV1 = kubeClient(fs.t).CoreV1()
 
 	for _, p := range pods {
-		assert.NoError(fs.t, coreV1.Pods(p.Namespace).Delete(p.Name, &metav1.DeleteOptions{}))
+		require.NoError(fs.t, coreV1.Pods(p.Namespace).Delete(p.Name, &metav1.DeleteOptions{}))
 	}
 }
 
 // RemoveAll previously installed faults.
 func (fs *FaultSet) RemoveAll() {
 	for _, s := range fs.streams {
-		assert.NoError(fs.t, s.CloseSend())
+		require.NoError(fs.t, s.CloseSend())
 
 		var _, err = s.Recv()
-		assert.Equal(fs.t, err, io.EOF)
+		require.Equal(fs.t, err, io.EOF)
 	}
 }
 
@@ -138,10 +137,10 @@ func (fs *FaultSet) install(pod v1.Pod, fault Fault) {
 		fs.streams[addr] = s
 	}
 
-	assert.NoError(fs.t, s.Send(&fault))
+	require.NoError(fs.t, s.Send(&fault))
 
 	_, err = s.Recv() // Read confirmation.
-	assert.NoError(fs.t, err)
+	require.NoError(fs.t, err)
 }
 
 // execRemote command |args| on the given |pod|.
@@ -164,7 +163,7 @@ func execRemote(t require.TestingT, pod *v1.Pod, args ...string) string {
 	}, scheme.ParameterCodec)
 
 	rc, err := remotecommand.NewSPDYExecutor(kubeConfig(t), "POST", req.URL())
-	assert.NoError(t, err, "starting exec stream")
+	require.NoError(t, err, "starting exec stream")
 
 	err = rc.Stream(remotecommand.StreamOptions{
 		Stdin:             nil,
@@ -173,8 +172,8 @@ func execRemote(t require.TestingT, pod *v1.Pod, args ...string) string {
 		Tty:               false,
 		TerminalSizeQueue: nil,
 	})
-	assert.NoError(t, err, "reading exec stream")
-	assert.Empty(t, stderr.String())
+	require.NoError(t, err, "reading exec stream")
+	require.Empty(t, stderr.String())
 
 	return strings.TrimSpace(stdout.String())
 }

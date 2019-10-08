@@ -10,7 +10,6 @@ import (
 	"path/filepath"
 	"sync"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc"
 	v1 "k8s.io/api/core/v1"
@@ -28,12 +27,12 @@ var (
 	Reject PartitionMode = "REJECT"
 )
 
-// FetchPods from Kubernetes using the given |namespace| and ListOptions.
+// FetchPods from Kubernetes using the given namespace and ListOptions.
 // Pods are returned in randomly shuffled order.
 func FetchPods(t require.TestingT, namespace, selector string) []v1.Pod {
 	var pods, err = kubeClient(t).CoreV1().Pods(namespace).List(metav1.ListOptions{LabelSelector: selector})
-	assert.NoError(t, err, "listing pods")
-	assert.NotEmpty(t, pods.Items)
+	require.NoError(t, err, "listing pods")
+	require.NotEmpty(t, pods.Items)
 	return shuffled(pods.Items)
 }
 
